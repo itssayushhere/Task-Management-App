@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 
@@ -10,6 +10,49 @@ const Personaltask = () => {
   const [dueDate, setDueDate] = useState("");
   const [status, setStatus] = useState("To Do"); // Added status state
 
+  const [user, setUser] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+const fetchUserData = async () => {
+  const token = JSON.parse(localStorage.getItem('token'))
+  try {
+    const response = await fetch('/me', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, // Assuming you store the token in localStorage
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch user data');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    throw error;
+  }
+};
+
+
+  useEffect(() => {
+    const getUserData = async () => {
+      try {
+        const userData = await fetchUserData();
+        setUser(userData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getUserData();
+  }, []); // Empty dependency array means this runs once on mount
+console.log(user)
   // Function to toggle modal
   const toggleModal = () => {
     setIsModalOpen((prev) => !prev);
