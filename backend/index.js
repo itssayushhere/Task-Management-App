@@ -24,6 +24,7 @@ const connectdb = async () => {
   }
 };
 
+
 const corsOptions = { origin: true, credentials: true };
 app.use(cors(corsOptions));
 app.use(cookieParser());
