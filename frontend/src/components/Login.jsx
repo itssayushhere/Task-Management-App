@@ -48,7 +48,7 @@ const baseUrl = `${import.meta.env.VITE_BASEURL}/user`
         dispatch({
           type: 'LOGIN',
           payload: {
-              token: true,
+              token: result.token,
               name: result.name,
               role: result.role
           }

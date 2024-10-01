@@ -5,9 +5,14 @@ import User from '../Schema/userSchema.js'
 const router = express.Router();
 
 // Create a new task
-router.post('/', async (req, res) => {
+router.post('/', isAuthenticated, async (req, res) => {
+  const userId = req.userId;
   try {
-    const { title, description, dueDate, status, assignedUser, priority, taskType } = req.body;
+    const { title, description, dueDate, status, priority, taskType } = req.body;
+
+    const assignedUser = req.body.assignedUser && req.body.assignedUser.length > 0 
+      ? req.body.assignedUser 
+      : [userId];
     
     // Create a new task
     const task = new Task({
@@ -29,7 +34,7 @@ router.post('/', async (req, res) => {
 
     res.status(201).json({ message: 'Task created successfully', task });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(400).json({ error: error.message });
   }
 });
@@ -38,7 +43,7 @@ router.post('/', async (req, res) => {
 // Get all tasks
 router.get('/tasks', isAuthenticated, async (req, res) => {
   try {
-    const tasks = await Task.find().populate('assignedUser', 'name email');  // Populate user details
+    const tasks = await Task.find().populate('assignedUser', 'name email');
     res.status(200).json(tasks);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -59,7 +64,7 @@ router.get('/tasks/:id', isAuthenticated, async (req, res) => {
 });
 
 // Update a task
-router.put('/tasks/:id', isAuthenticated, async (req, res) => {
+router.put('/:id', isAuthenticated, async (req, res) => {
  const role = req.role
   try {
     const { title, description, dueDate, status, assignedUser, priority, taskType } = req.body;

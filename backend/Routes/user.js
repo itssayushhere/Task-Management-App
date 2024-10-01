@@ -72,14 +72,7 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign({ id: user._id, role: user.role,name: user.name , email: user.email}, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      sameSite: 'strict',
-      maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
-      secure: process.env.NODE_ENV === 'production', // true in production
-    });
-
-    res.status(200).json({ message: 'Login successful',name:user.name,role:user.role});
+    res.status(200).json({ message: 'Login successful',token:token,name:user.name,role:user.role});
   } catch (error) {
     console.log(error)
     res.status(500).json({ message: 'Server error', error });
@@ -89,10 +82,11 @@ router.post('/login', async (req, res) => {
 //// Get All Users Route
 router.get('/', async (req, res) => { 
   try {
-      const users = await User.find().select('-password').select('-tasks');
-      const tasks = await Task.find().populate("assignedUser","name")
-      return res.status(200).json({users,tasks});
+      const users = await User.find().select('-password -tasks');
+      const tasks = await Task.find({ taskType: 'team' }).populate("assignedUser", "name");
+      return res.status(200).json({ users, tasks });
   } catch (error) {
+    
     return res.status(500).json({ message: 'Server error', error: error.message });
   }
 });

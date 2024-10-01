@@ -24,7 +24,6 @@ const Teamtask = ({ name, role }) => {
   const [priority, setPriority] = useState("low");
   const [dueDate, setDueDate] = useState("");
   const [task, settask] = useState([]);
-  console.log(task);
   const taskUrl = `${import.meta.env.VITE_BASEURL}/task`; // Adjust the endpoint as necessary
   const getUsers = async () => {
     setLoading(true);
@@ -69,12 +68,17 @@ const Teamtask = ({ name, role }) => {
       dueDate,
       taskType: "team",
     };
-
+    const token = localStorage.getItem("token");
+      if (!token) {
+       toast.error("No token, authorization denied,try relogin");
+        return;
+      }
     try {
       const response = await fetch(taskUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(taskData),
       });
@@ -87,7 +91,7 @@ const Teamtask = ({ name, role }) => {
       toast.success("Assigned");
     } catch (error) {
       console.error("Error creating task:", error.message);
-      // Handle error (e.g., show an error message to the user)
+      toast.error("Error")
     } finally {
       toggleModal(); // Close the modal after submission
     }
