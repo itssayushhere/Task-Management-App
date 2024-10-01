@@ -1,64 +1,52 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
-
+import PersonalTaskList from "./PersonalTaskList";
+import ReactLoading from "react-loading"; // Import ReactLoading
 const Personaltask = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("low");
   const [dueDate, setDueDate] = useState("");
-  const [status, setStatus] = useState("To Do"); // Added status state
-
+  const [status, setStatus] = useState("To Do");
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-const fetchUserData = async () => {
-  const token = JSON.parse(localStorage.getItem('token'))
-  try {
-    const response = await fetch('/me', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`, // Assuming you store the token in localStorage
-      },
-    });
+  const fetchUserData = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(`${import.meta.env.VITE_BASEURL}/user/me`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch user data');
+      if (!response.ok) {
+        throw new Error("Failed to fetch user data");
+      }
+
+      const data = await response.json();
+      setUser(data.tasks);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      setError(error.message); // Set error message
+    } finally {
+      setLoading(false); // Set loading to false
     }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error fetching user data:', error);
-    throw error;
-  }
-};
-
+  };
 
   useEffect(() => {
-    const getUserData = async () => {
-      try {
-        const userData = await fetchUserData();
-        setUser(userData);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetchUserData();
+  }, []);
 
-    getUserData();
-  }, []); // Empty dependency array means this runs once on mount
-console.log(user)
-  // Function to toggle modal
   const toggleModal = () => {
     setIsModalOpen((prev) => !prev);
   };
 
-  // Function to handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newTask = {
@@ -66,20 +54,20 @@ console.log(user)
       description,
       priority,
       dueDate,
-      status, 
+      status,
       taskType: "personal",
-    }
+    };
     const token = localStorage.getItem("token");
-      if (!token) {
-       toast.error("No token, authorization denied,try relogin");
-        return;
-      }
+    if (!token) {
+      toast.error("No token, authorization denied, try relogin");
+      return;
+    }
     try {
       const response = await fetch(`${import.meta.env.VITE_BASEURL}/task`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Assuming you're using a token-based system
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(newTask),
       });
@@ -87,35 +75,43 @@ console.log(user)
       if (response.ok) {
         const result = await response.json();
         console.log("Task created:", result);
-        toast.success("Task Created")
+        toast.success("Task Created");
         setTitle("");
         setDescription("");
         setDueDate("");
-        setStatus("To Do"); // Reset the status
+        setStatus("To Do");
         setPriority("low");
       } else {
         const errorData = await response.json();
-        toast.error("error")
+        toast.error("Error creating task");
         console.error("Error creating task:", errorData.error);
       }
     } catch (error) {
-      toast.error("error")
+      toast.error("Error creating task");
       console.error("Error:", error);
     }
   };
 
   return (
     <div>
-      <div className="flex items-center justify-center">
-        {/* Button to open modal */}
-        <button
+      <div className="flex flex-col items-center justify-center">
+       
+        {loading ? (
+          <ReactLoading type="bars" color="#ffffff" height={50} width={50} />
+        ) : error ? (
+          <div className="bg-red-200 text-red-700 p-4 rounded-md mb-4">
+            {error}
+          </div>
+        ) : user && (
+          <PersonalTaskList tasks={user} />
+        ) }
+         <button
           className="p-2 rounded-lg mt-2 bg-green-500 font-bold font-serif"
           onClick={toggleModal}
         >
           Create Task
         </button>
 
-        {/* Modal */}
         <AnimatePresence>
           {isModalOpen && (
             <motion.div
@@ -124,10 +120,9 @@ console.log(user)
               exit={{ opacity: 0 }}
               className="fixed inset-0 flex items-center justify-center bg-black/30 text-black"
             >
-              <div className="bg-white p-5 rounded-xl shadow-lg border-2 border-black">
+              <div className="bg-white p-5 rounded-xl shadow-lg border-2 border-black w-80 sm:w-96">
                 <h2 className="text-xl font-bold mb-4">Create New Task</h2>
 
-                {/* Task Form */}
                 <form onSubmit={handleSubmit}>
                   <div className="mb-4">
                     <label className="block text-sm font-medium">Title</label>
@@ -142,7 +137,9 @@ console.log(user)
                   </div>
 
                   <div className="mb-4">
-                    <label className="block text-sm font-medium">Description</label>
+                    <label className="block text-sm font-medium">
+                      Description
+                    </label>
                     <textarea
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
@@ -153,7 +150,9 @@ console.log(user)
                   </div>
 
                   <div className="mb-4">
-                    <label className="block text-sm font-medium">Priority</label>
+                    <label className="block text-sm font-medium">
+                      Priority
+                    </label>
                     <select
                       value={priority}
                       onChange={(e) => setPriority(e.target.value)}
@@ -166,7 +165,9 @@ console.log(user)
                   </div>
 
                   <div className="mb-4">
-                    <label className="block text-sm font-medium">Due Date</label>
+                    <label className="block text-sm font-medium">
+                      Due Date
+                    </label>
                     <input
                       type="date"
                       value={dueDate}
@@ -176,7 +177,6 @@ console.log(user)
                     />
                   </div>
 
-                  {/* Status input */}
                   <div className="mb-4">
                     <label className="block text-sm font-medium">Status</label>
                     <select
@@ -210,6 +210,7 @@ console.log(user)
             </motion.div>
           )}
         </AnimatePresence>
+
       </div>
     </div>
   );

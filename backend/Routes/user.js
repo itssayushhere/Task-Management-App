@@ -96,7 +96,7 @@ router.get('/', async (req, res) => {
 router.get('/me',isAuthenticated, async (req, res) => {
   const userId = req.userId
   try {
-    const user = await User.findById(userId).select("-password");
+    const user = await User.findById(userId).select("-password").populate('tasks',"title description dueDate status priority taskType")
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }

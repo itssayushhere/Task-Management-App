@@ -3,10 +3,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useContext, useState } from "react";
 import { AuthContext } from "../Auth/AuthContext.jsx";
 import { FaPencilAlt, FaTimes } from "react-icons/fa";
-import {toast} from 'react-toastify'
+import { toast } from "react-toastify";
 
-
-const TaskCard = ({ task, onSave }) => {
+const TaskCard = ({ task, onSave  }) => {
   const { title, description, dueDate, priority, status, assignedUser } = task;
   const user = assignedUser.map((item) => item.name);
   const [edit, setEdit] = useState(false);
@@ -52,7 +51,7 @@ const TaskCard = ({ task, onSave }) => {
       layout
       className="bg-black shadow-lg rounded-lg p-5 m-4 w-80 relative"
     >
-      {state.role === "admin" && (
+      {state && state.role === "admin" && (
         <motion.button
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{
@@ -117,12 +116,19 @@ const TaskCard = ({ task, onSave }) => {
               <option value="In Progress">In Progress</option>
               <option value="Completed">Completed</option>
             </select>
-            <button
-              onClick={handleSave}
-              className="w-full p-2 bg-purple-600 text-white rounded"
+            <div
+              className=" flex flex-row gap-3"
             >
-              Save
-            </button>
+              <button className="w-full p-2 bg-red-700 text-white rounded">
+                Delete
+              </button>
+              <button
+                onClick={handleSave}
+                className="w-full p-2 bg-blue-700 text-white rounded"
+              >
+                Save
+              </button>
+            </div>
           </motion.div>
         ) : (
           <motion.div
@@ -175,17 +181,21 @@ const TaskCard = ({ task, onSave }) => {
   );
 };
 
-const TaskList = ({ tasks }) => {
+const TaskList = ({ tasks,pagenumber }) => {
   const [taskList, setTaskList] = useState(tasks); // Store task data locally
-  const [currentPage, setCurrentPage] = useState(1);
   const [direction, setDirection] = useState(0);
   const tasksPerPage = 4;
-
+  const totalPages = Math.ceil(taskList.length / tasksPerPage);
+  console.log(pagenumber)
+  const [currentPage, setCurrentPage] = useState(pagenumber ? totalPages : 1);  
+  const lastTaskIndex = currentPage * tasksPerPage;
+  const firstTaskIndex = lastTaskIndex - tasksPerPage;
+  const currentTasks = taskList.slice(firstTaskIndex, lastTaskIndex);
   const updateTask = async (taskId, taskData) => {
+    const token = localStorage.getItem("token");
     try {
-      const token = localStorage.getItem("token");
       if (!token) {
-       toast.error("No token, authorization denied,try relogin");
+        toast.error("No token, authorization denied,try relogin");
         return;
       }
 
@@ -197,20 +207,18 @@ const TaskList = ({ tasks }) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(taskData),
-          credentials: "include",
+          body: JSON.stringify(taskData)
         }
       );
 
       const result = await response.json();
       if (response.ok) {
         toast.success("Updated successfully");
-        // Update the local taskList state with the updated task data
         setTaskList((prevTasks) =>
           prevTasks.map((task) =>
             task._id === taskId ? { ...task, ...taskData } : task
           )
-        );
+        )
       } else {
         console.error("Error updating task:", result.message);
         toast.error("Update failed");
@@ -219,11 +227,6 @@ const TaskList = ({ tasks }) => {
       console.error("Error in fetch request:", error);
     }
   };
-
-  const lastTaskIndex = currentPage * tasksPerPage;
-  const firstTaskIndex = lastTaskIndex - tasksPerPage;
-  const currentTasks = taskList.slice(firstTaskIndex, lastTaskIndex);
-  const totalPages = Math.ceil(taskList.length / tasksPerPage);
 
   const nextPage = () => {
     if (currentPage < totalPages) {

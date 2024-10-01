@@ -24,7 +24,9 @@ const Teamtask = ({ name, role }) => {
   const [priority, setPriority] = useState("low");
   const [dueDate, setDueDate] = useState("");
   const [task, settask] = useState([]);
+  const [last,setLast] = useState(false)
   const taskUrl = `${import.meta.env.VITE_BASEURL}/task`; // Adjust the endpoint as necessary
+
   const getUsers = async () => {
     setLoading(true);
     setError(null);
@@ -87,8 +89,9 @@ const Teamtask = ({ name, role }) => {
         throw new Error(`Error: ${response.statusText}`);
       }
 
-      getUsers();
+       await getUsers();       
       toast.success("Assigned");
+      setLast(true)
     } catch (error) {
       console.error("Error creating task:", error.message);
       toast.error("Error")
@@ -108,7 +111,7 @@ const Teamtask = ({ name, role }) => {
       {!loading && !error && (
         <div>
           <div>
-            <TaskList tasks={task} />
+            <TaskList tasks={task} pagenumber={last} />
           </div>
           <div>
             <button
