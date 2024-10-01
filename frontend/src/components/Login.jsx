@@ -10,7 +10,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { state , dispatch } = useContext(AuthContext);
+  const {  dispatch } = useContext(AuthContext);
   const validateForm = () => {
     if (!email || !password) {
       setError('All fields are required');
@@ -49,7 +49,8 @@ const baseUrl = `${import.meta.env.VITE_BASEURL}/user`
           type: 'LOGIN',
           payload: {
               token: true,
-              name: result.name
+              name: result.name,
+              role: result.role
           }
       });
         toast.success("Successfully login")
@@ -64,12 +65,12 @@ const baseUrl = `${import.meta.env.VITE_BASEURL}/user`
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-blue-800 flex-col relative">
+    <div className="min-h-screen flex items-center justify-center bg-purple-800/50 flex-col relative">
       <div className='text-4xl text-white font-serif font-semibold absolute top-20'>
         Task.M
       </div>
     <div className="bg-white p-6 rounded-lg shadow-md sm:w-96 w-full border-2 border-black">
-      <h2 className="text-2xl font-bold text-center mb-4 font-mono tracking-widest border-b-2 border-black mx-20">Login</h2>
+      <h2 className="text-2xl font-bold text-center mb-4 font-mono tracking-widest border-b-2 border-black mx-20 text-black">Login</h2>
       {error && <p className="text-red-500 mb-4">{error}</p>}
       <form onSubmit={handleLogin}>
         <div className="mb-4">
@@ -78,7 +79,7 @@ const baseUrl = `${import.meta.env.VITE_BASEURL}/user`
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="border-black/50  w-full px-4 py-2 mt-2 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+            className="border-black/50  w-full px-4 py-2 mt-2 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 text-black"
             required
           />
         </div>
@@ -88,7 +89,7 @@ const baseUrl = `${import.meta.env.VITE_BASEURL}/user`
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="border-black/50  w-full px-4 py-2 mt-2 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+            className="border-black/50  w-full px-4 py-2 mt-2 border-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 text-black"
             required
           />
         </div>
@@ -107,7 +108,7 @@ const baseUrl = `${import.meta.env.VITE_BASEURL}/user`
         </button>
       </form>
 
-      <p className="mt-4 text-center">
+      <p className="mt-4 text-center text-black">
         Don&apos;t have an account?{' '}
         <button
           onClick={() => navigate('/register')}

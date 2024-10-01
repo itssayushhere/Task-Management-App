@@ -1,7 +1,7 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Loading from 'react-loading';
-
+import { toast } from 'react-toastify';
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -9,6 +9,7 @@ const Register = () => {
   const [role, setRole] = useState('member');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
   const navigate = useNavigate();
 
   const validateForm = () => {
@@ -27,7 +28,7 @@ const Register = () => {
     return true;
   };
 
-const baseUrl = `${import.meta.env.VITE_BASEURL}/user`
+  const baseUrl = `${import.meta.env.VITE_BASEURL}/user`;
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
@@ -36,14 +37,14 @@ const baseUrl = `${import.meta.env.VITE_BASEURL}/user`
 
     setLoading(true);
 
-    const loweredcased = email.toLowerCase()
+    const loweredcased = email.toLowerCase();
     try {
       const response = await fetch(`${baseUrl}/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email:loweredcased, password, role }),
+        body: JSON.stringify({ name, email: loweredcased, password, role }),
       });
 
       const result = await response.json();
@@ -52,6 +53,7 @@ const baseUrl = `${import.meta.env.VITE_BASEURL}/user`
         setError(result.message || 'Registration failed');
       } else {
         navigate('/login');
+        toast.success("Registration succesfull")
       }
     } catch (err) {
       console.error('Error during registration:', err);
@@ -62,80 +64,87 @@ const baseUrl = `${import.meta.env.VITE_BASEURL}/user`
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-blue-800 relative flex-col">
-        <div className='text-4xl text-white font-serif font-semibold absolute top-5'>
+    <div className="min-h-screen flex items-center justify-center bg-purple-800/50 relative flex-col">
+      <div className='text-4xl text-white font-serif font-semibold absolute top-5'>
         Task.M
       </div>
-    <div className="bg-white p-6 rounded-lg shadow-md sm:w-96 w-full m-2">
-      <h2 className="text-2xl font-bold text-center mb-4 font-mono tracking-widest border-b-2 border-black mx-20">Register</h2>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      <form onSubmit={handleRegister}>
-        <div className="mb-4">
-          <label className="block text-gray-900 font-bold">Name:</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="border-black/70 w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
-            required
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-900 font-bold">Email:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="border-black/70 w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
-            required
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-900 font-bold">Password:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="border-black/70 w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
-            required
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-900 font-bold">Role:</label>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 text-black focus:ring-blue-600"
+      <div className="bg-white p-6 rounded-lg shadow-md sm:w-96 w-full m-2">
+        <h2 className="text-2xl font-bold text-center mb-4 font-mono tracking-widest border-b-2 border-black mx-20 text-black">Register</h2>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        <form onSubmit={handleRegister}>
+          <div className="mb-4">
+            <label className="block text-gray-900 font-bold">Name:</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="border-black/70 w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 text-black"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-900 font-bold">Email:</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="border-black/70 w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 text-black"
+              required
+            />
+          </div>
+          <div className="mb-4 relative">
+            <label className="block text-gray-900 font-bold">Password:</label>
+            <input
+              type={showPassword ? 'text' : 'password'} // Toggle between 'text' and 'password'
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="border-black/70 w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 text-black"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)} // Toggle password visibility
+              className="absolute right-2 top-10 text-gray-600"
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-900 font-bold">Role:</label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 text-black focus:ring-blue-600"
+            >
+              <option value="member">Member</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+            disabled={loading}
           >
-            <option value="member" >Member</option>
-            <option value="admin">Admin</option>
-          </select>
-        </div>
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
-          disabled={loading}
-        >
-          {loading ? (
-            <div className="flex justify-center">
-              <Loading type="bars" color="#fff" height={25} width={25} />
-            </div>
-          ) : (
-            'Register'
-          )}
-        </button>
-      </form>
+            {loading ? (
+              <div className="flex justify-center">
+                <Loading type="bars" color="#fff" height={25} width={25} />
+              </div>
+            ) : (
+              'Register'
+            )}
+          </button>
+        </form>
 
-      <p className="mt-4 text-center">
-        Already have an account?{' '}
-        <button
-          onClick={() => navigate('/login')}
-          className="text-blue-600 hover:underline"
-        >
-          Login
-        </button>
-      </p>
-    </div>
+        <p className="mt-4 text-center text-black">
+          Already have an account?{' '}
+          <button
+            onClick={() => navigate('/login')}
+            className="text-blue-600 hover:underline"
+          >
+            Login
+          </button>
+        </p>
+      </div>
     </div>
   );
 };

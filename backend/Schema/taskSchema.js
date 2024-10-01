@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+
 const taskSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -25,12 +26,12 @@ const taskSchema = new mongoose.Schema({
   }],
   priority: {
     type: String,
-    enum: ["Low", "Medium", "High"],
-    default: "Medium",
+    enum: ["low", "medium", "high"],
+    default: "medium",
   },
   taskType: {
     type: String,
-    enum: ["Personal", "Team"],
+    enum: ["personal", "team"],
     required: true,
   },
 }, { timestamps: true });

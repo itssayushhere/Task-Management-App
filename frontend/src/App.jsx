@@ -5,7 +5,8 @@ import Login from './components/Login.jsx';
 import Register from './components/Register.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import { AuthProvider } from './Auth/AuthContext.jsx';
-import ProtectedRoute from './ProtectedRoute.jsx'; 
+import ProtectedRoute from './ProtectedRoute.jsx';
+import "./App.css" 
 function App() {
   return (
     <AuthProvider>

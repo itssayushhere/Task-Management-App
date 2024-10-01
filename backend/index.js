@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import userRoute from "./Routes/user.js";
+import taskRoute from './Routes/task.js'
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 8000;
@@ -28,6 +29,7 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 app.use("/user", userRoute);
+app.use("/task", taskRoute);
 app.listen(port, () => {
   connectdb();
   console.log("Server running on port " + port);

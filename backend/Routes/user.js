@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import validator from 'validator';  
 import jwt from 'jsonwebtoken'
 import { isAuthenticated } from '../verifyauth.js';
+import Task from '../Schema/taskSchema.js';
 const router = express.Router();
 
 //// Registration Route
@@ -78,7 +79,7 @@ router.post('/login', async (req, res) => {
       secure: process.env.NODE_ENV === 'production', // true in production
     });
 
-    res.status(200).json({ message: 'Login successful',name:user.name});
+    res.status(200).json({ message: 'Login successful',name:user.name,role:user.role});
   } catch (error) {
     console.log(error)
     res.status(500).json({ message: 'Server error', error });
@@ -88,8 +89,9 @@ router.post('/login', async (req, res) => {
 //// Get All Users Route
 router.get('/', async (req, res) => { 
   try {
-      const users = await User.find(); 
-      return res.status(200).json(users);
+      const users = await User.find().select('-password').select('-tasks');
+      const tasks = await Task.find().populate("assignedUser","name")
+      return res.status(200).json({users,tasks});
   } catch (error) {
     return res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -97,9 +99,10 @@ router.get('/', async (req, res) => {
 
 
 //// Get User By ID Route
-router.get('/:id', async (req, res) => {
+router.get('/me',isAuthenticated, async (req, res) => {
+  const userId = req.userId
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(userId).select("-password");
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }

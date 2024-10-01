@@ -1,13 +1,15 @@
 import express from 'express';
-import Task from '../models/task.js';  // Adjust the path based on your folder structure
-import { isAuthenticated, isAdmin } from '../middleware/auth.js';  // Assuming you have these middlewares for auth
-
+import Task from '../Schema/taskSchema.js';  // Adjust the path based on your folder structure
+import { isAuthenticated } from '../verifyauth.js';  // Assuming you have these middlewares for auth
+import User from '../Schema/userSchema.js'
 const router = express.Router();
 
 // Create a new task
-router.post('/tasks', isAuthenticated, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { title, description, dueDate, status, assignedUser, priority, taskType } = req.body;
+    
+    // Create a new task
     const task = new Task({
       title,
       description,
@@ -17,12 +19,21 @@ router.post('/tasks', isAuthenticated, async (req, res) => {
       priority,
       taskType,
     });
+
     await task.save();
+    await Promise.all(assignedUser.map(async (userId) => {
+      await User.findByIdAndUpdate(userId, {
+        $push: { tasks: task._id }
+      });
+    }));
+
     res.status(201).json({ message: 'Task created successfully', task });
   } catch (error) {
+    console.log(error)
     res.status(400).json({ error: error.message });
   }
 });
+
 
 // Get all tasks
 router.get('/tasks', isAuthenticated, async (req, res) => {
@@ -49,8 +60,12 @@ router.get('/tasks/:id', isAuthenticated, async (req, res) => {
 
 // Update a task
 router.put('/tasks/:id', isAuthenticated, async (req, res) => {
+ const role = req.role
   try {
     const { title, description, dueDate, status, assignedUser, priority, taskType } = req.body;
+    if(role != "admin"){
+      return res.status(404).json({message:"Not authourized"})
+    }
     const task = await Task.findByIdAndUpdate(
       req.params.id,
       { title, description, dueDate, status, assignedUser, priority, taskType },
@@ -58,7 +73,7 @@ router.put('/tasks/:id', isAuthenticated, async (req, res) => {
     ).populate('assignedUser', 'name email');
 
     if (!task) {
-      return res.status(404).json({ message: 'Task not found' });
+      return res.status(401).json({ message: 'Task not found' });
     }
 
     res.status(200).json({ message: 'Task updated successfully', task });
@@ -68,7 +83,7 @@ router.put('/tasks/:id', isAuthenticated, async (req, res) => {
 });
 
 // Delete a task
-router.delete('/tasks/:id', isAuthenticated, isAdmin, async (req, res) => {
+router.delete('/tasks/:id', isAuthenticated, async (req, res) => {
   try {
     const task = await Task.findByIdAndDelete(req.params.id);
     if (!task) {
