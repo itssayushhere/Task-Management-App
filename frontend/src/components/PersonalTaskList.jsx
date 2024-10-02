@@ -132,9 +132,9 @@ const handleEdit = (task) => {
 
   return (
     <div className="flex flex-col items-center">
-      <h2 className="text-purple-600 text-2xl font-bold mb-4">Personal Tasks</h2>
+      <h2 className="text-purple-600 text-2xl font-bold mb-4 ">Personal Tasks</h2>
       <div className='flex flex-wrap bg-black rounded-xl'>
-      {personalTasks.map((task) => (
+      {personalTasks.length !=0 ? (personalTasks.map((task) => (
         <motion.div
           layout
           key={task._id}
@@ -288,12 +288,12 @@ const handleEdit = (task) => {
             )}
           </AnimatePresence>
         </motion.div>
-      ))}
+      ))):<div className='flex items-center w-full justify-center text-center text-purple-400/60'>You not created any tasks , click green button now.</div>}
 </div>
       <h2 className="text-purple-600 text-2xl font-bold mb-4">Team Tasks</h2>
       <AnimatePresence>
         <div className='flex flex-wrap items-center justify-center'>
-          {teamTasks.map(task => (
+          {teamTasks.length !=0 ? teamTasks.map(task => (
             <motion.div
               key={task._id}
               layout
@@ -331,7 +331,7 @@ const handleEdit = (task) => {
                 </p>
               </div>
             </motion.div>
-          ))}
+          )): <div className='flex items-center w-full justify-center text-center text-purple-400/60'>No task assigned to you , so chill for now.</div>}
         </div>
       </AnimatePresence>
     </div>
