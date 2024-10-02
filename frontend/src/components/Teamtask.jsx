@@ -171,7 +171,7 @@ const Teamtask = ({ name, role }) => {
               )}
             </motion.div>
           </div>
-          {role === "admin" && (
+          {role && role === "admin" && (
             <div className="flex flex-col items-center justify-center">
               {/* Button to open modal */}
               <div>

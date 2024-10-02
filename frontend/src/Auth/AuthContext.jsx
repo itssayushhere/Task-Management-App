@@ -19,6 +19,7 @@ const reducer = (state, action) => {
                 ...state,
                 token: action.payload.token,
                 name: action.payload.name,
+                role : action.payload.role
             };
         case "LOGOUT":
             localStorage.removeItem("token"); 

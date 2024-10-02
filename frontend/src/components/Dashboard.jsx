@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 import { AuthContext } from "../Auth/AuthContext"; 
 import { useNavigate } from "react-router-dom"; 
 import { motion, AnimatePresence } from "framer-motion"; 
-import Teamtask from "./teamtask";
+import Teamtask from "./Teamtask";
 import Personaltask from "./personaltask";
 
 const Dashboard = () => {
