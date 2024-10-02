@@ -5,10 +5,11 @@ import { AuthContext } from "../Auth/AuthContext.jsx";
 import { FaPencilAlt, FaTimes } from "react-icons/fa";
 import { toast } from "react-toastify";
 
-const TaskCard = ({ task, onSave  }) => {
+const TaskCard = ({ task, onSave, onDelete }) => { // Added onDelete prop
   const { title, description, dueDate, priority, status, assignedUser } = task;
   const user = assignedUser.map((item) => item.name);
   const [edit, setEdit] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false); // Local state for delete confirmation
   const { state } = useContext(AuthContext);
 
   // Local state for form inputs
@@ -27,7 +28,7 @@ const TaskCard = ({ task, onSave  }) => {
       priority === editedPriority &&
       status === editedStatus
     ) {
-      toast.info("No changes .");
+      toast.info("No changes.");
       setEdit(false); // Exit edit mode if no changes
       return;
     }
@@ -44,6 +45,16 @@ const TaskCard = ({ task, onSave  }) => {
 
     onSave(updatedTask); // Pass updated task to parent
     setEdit(false); // Exit edit mode
+  };
+
+  const handleDelete = async () => {
+    try {
+      await onDelete(task._id); // Call onDelete prop to delete the task
+      toast.success("Task deleted successfully");
+    } catch (error) {
+      console.log(error)
+      toast.error("Failed to delete task");
+    }
   };
 
   return (
@@ -116,10 +127,11 @@ const TaskCard = ({ task, onSave  }) => {
               <option value="In Progress">In Progress</option>
               <option value="Completed">Completed</option>
             </select>
-            <div
-              className=" flex flex-row gap-3"
-            >
-              <button className="w-full p-2 bg-red-700 text-white rounded">
+            <div className="flex flex-row gap-3">
+              <button
+                onClick={() => setConfirmDelete(true)} // Show confirmation button
+                className="w-full p-2 bg-red-700 text-white rounded"
+              >
                 Delete
               </button>
               <button
@@ -129,6 +141,34 @@ const TaskCard = ({ task, onSave  }) => {
                 Save
               </button>
             </div>
+
+            <AnimatePresence>
+              {confirmDelete && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex flex-col space-y-2 mt-3"
+                >
+                  <p className="text-red-400">Are you sure you want to delete this task?</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleDelete} // Call delete function
+                      className="w-full p-2 bg-red-500 text-white rounded"
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      onClick={() => setConfirmDelete(false)} // Hide confirmation button
+                      className="w-full p-2 bg-gray-500 text-white rounded"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         ) : (
           <motion.div
@@ -186,13 +226,12 @@ const TaskList = ({ tasks,pagenumber }) => {
   const [direction, setDirection] = useState(0);
   const tasksPerPage = 4;
   const totalPages = Math.ceil(taskList.length / tasksPerPage);
-  console.log(pagenumber)
   const [currentPage, setCurrentPage] = useState(pagenumber ? totalPages : 1);  
   const lastTaskIndex = currentPage * tasksPerPage;
   const firstTaskIndex = lastTaskIndex - tasksPerPage;
   const currentTasks = taskList.slice(firstTaskIndex, lastTaskIndex);
+  const token = localStorage.getItem("token");
   const updateTask = async (taskId, taskData) => {
-    const token = localStorage.getItem("token");
     try {
       if (!token) {
         toast.error("No token, authorization denied,try relogin");
@@ -227,7 +266,35 @@ const TaskList = ({ tasks,pagenumber }) => {
       console.error("Error in fetch request:", error);
     }
   };
-
+  const deleteTask = async (taskId) => {
+    const token = localStorage.getItem("token"); // Ensure token is retrieved here
+    try {
+      if (!token) {
+        toast.error("No token, authorization denied, try relogin");
+        return;
+      }
+      
+      const response = await fetch(`${import.meta.env.VITE_BASEURL}/task/${taskId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+  
+      if (response.ok) {
+        // Only update the state if the deletion is successful
+        setTaskList((prevTasks) => prevTasks.filter((task) => task._id !== taskId));
+        // toast.success("Task deleted successfully"); // Notify success
+      } else {
+        throw new Error(`Error: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error("Failed to delete task:", error);
+      toast.error("Failed to delete task"); // Notify failure
+    }
+  };
+  
   const nextPage = () => {
     if (currentPage < totalPages) {
       setDirection(1);
@@ -287,6 +354,7 @@ const TaskList = ({ tasks,pagenumber }) => {
                 key={task._id}
                 task={task}
                 onSave={handleUpdateTask} // Pass update handler to TaskCard
+                onDelete={deleteTask}
               />
             ))}
           </motion.div>

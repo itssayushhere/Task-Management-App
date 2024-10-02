@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion"; // Import Framer Motion
 import InputMembers from "./InputMembers";
 import { toast } from "react-toastify";
 import TaskList from "./TaskCard";
+import TaskReport from "./TaskReport";
 const baseUrl = `${import.meta.env.VITE_BASEURL}/user`;
 
 const fetchUsers = async () => {
@@ -171,8 +172,11 @@ const Teamtask = ({ name, role }) => {
             </motion.div>
           </div>
           {role === "admin" && (
-            <div className="flex items-center justify-center">
+            <div className="flex flex-col items-center justify-center">
               {/* Button to open modal */}
+              <div>
+                <TaskReport allUsers={users}/>
+              </div>
               <button
                 className="p-2 rounded-lg mt-2 bg-green-500 font-bold font-serif"
                 onClick={toggleModal}

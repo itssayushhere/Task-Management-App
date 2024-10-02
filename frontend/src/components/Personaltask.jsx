@@ -81,6 +81,9 @@ const Personaltask = () => {
         setDueDate("");
         setStatus("To Do");
         setPriority("low");
+        fetchUserData()
+        toggleModal()
+        
       } else {
         const errorData = await response.json();
         toast.error("Error creating task");
@@ -95,7 +98,6 @@ const Personaltask = () => {
   return (
     <div>
       <div className="flex flex-col items-center justify-center">
-       
         {loading ? (
           <ReactLoading type="bars" color="#ffffff" height={50} width={50} />
         ) : error ? (
@@ -103,7 +105,7 @@ const Personaltask = () => {
             {error}
           </div>
         ) : user && (
-          <PersonalTaskList tasks={user} />
+          <PersonalTaskList tasks={user} recall={fetchUserData}/>
         ) }
          <button
           className="p-2 rounded-lg mt-2 bg-green-500 font-bold font-serif"
@@ -121,7 +123,7 @@ const Personaltask = () => {
               className="fixed inset-0 flex items-center justify-center bg-black/30 text-black"
             >
               <div className="bg-white p-5 rounded-xl shadow-lg border-2 border-black w-80 sm:w-96">
-                <h2 className="text-xl font-bold mb-4">Create New Task</h2>
+                <h2 className="text-xl font-bold mb-4"> Personal Task</h2>
 
                 <form onSubmit={handleSubmit}>
                   <div className="mb-4">
