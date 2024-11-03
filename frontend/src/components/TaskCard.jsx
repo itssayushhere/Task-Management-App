@@ -231,13 +231,13 @@ const TaskList = ({ tasks,pagenumber }) => {
   const firstTaskIndex = lastTaskIndex - tasksPerPage;
   const currentTasks = taskList.slice(firstTaskIndex, lastTaskIndex);
   const token = localStorage.getItem("token");
+  
   const updateTask = async (taskId, taskData) => {
     try {
       if (!token) {
         toast.error("No token, authorization denied,try relogin");
         return;
       }
-
       const response = await fetch(
         `${import.meta.env.VITE_BASEURL}/task/${taskId}`,
         {
@@ -249,7 +249,7 @@ const TaskList = ({ tasks,pagenumber }) => {
           body: JSON.stringify(taskData)
         }
       );
-
+      
       const result = await response.json();
       if (response.ok) {
         toast.success("Updated successfully");
@@ -310,7 +310,6 @@ const TaskList = ({ tasks,pagenumber }) => {
   };
 
   const handleUpdateTask = async (updatedTask) => {
-    // Update task in the backend and locally update UI without a full reload
     await updateTask(updatedTask._id, updatedTask);
   };
 

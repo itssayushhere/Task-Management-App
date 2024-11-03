@@ -41,6 +41,7 @@ const Teamtask = ({ name, role }) => {
       setLoading(false);
     }
   };
+  
   useEffect(() => {
     getUsers();
   }, []);
